@@ -5,7 +5,7 @@ import pandas as pd
 
 df = pd.read_csv('immo_data.csv')
 
-# Droppe Spalten mit unbrauchbarer Info/zu viele NaN-values:
+# Droppe Spalten mit unbrauchbarer Info / zu viele NaN-values:
 
 # description, facilities (Fließtext)
 # street (komisches Format, dafür streetPlain)
