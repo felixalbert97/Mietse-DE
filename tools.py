@@ -30,7 +30,6 @@ def categorical_dist_imputer(df, column, inplace = False):
         df.loc[df[column].isnull(), column] = random_floors
         return df
 
-
 def generate_dummies(ts, cols, trap=False):
     # iterate over each column which you want to dummify
     for col in cols:

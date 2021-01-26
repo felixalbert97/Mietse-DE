@@ -1,7 +1,8 @@
 import pandas as pd
 import seaborn as sns
 import numpy as np
-import utils 
+import tools
+import math as m
 
 # Zeige immer alle Spalten eines DataFrames an
 pd.set_option('display.max_columns', None)
@@ -83,7 +84,7 @@ df_1 = df_flat_drop
 df_1['yearConstructedRange_new'] = df_1['yearConstructedRange'].map(lambda x: 1 if x<=5 else x-4)
 
 # Impute fehlende Werte nach empirischer Verteilung der vorhandenen Werte
-df_1 = utils.categorical_dist_imputer(df_1, 'yearConstructedRange_new')
+df_1 = tools.categorical_dist_imputer(df_1, 'yearConstructedRange_new')
 # Droppe yearConstructedRange, die durch yearConstructedRangeNew ersetzt wurde
 df_1.drop('yearConstructedRange', axis=1, inplace=True)
 
@@ -114,7 +115,7 @@ df_1['floor_new'] = df_1.floor.map(lambda x: 6 if x>5 else x)
 df_1.drop('floor', axis=1, inplace=True)
 
 # Impute fehlende Werte nach empirischer Verteilung der vorhandenen Werte
-df_1 = utils.categorical_dist_imputer(df_1,'floor_new')
+df_1 = tools.categorical_dist_imputer(df_1,'floor_new')
 
 ################
 # InteriorQual #
@@ -133,10 +134,27 @@ df_1.loc[df['interiorQual'].isnull(),'interiorQual'] = 'nicht vorhanden'
 interiorQual_dict = {'normal':0, 'simple':0, 'nicht vorhanden':0, 'sophisticated':1, 'luxury':1}
 df_1['interiorQual_new'] = df_1.interiorQual.map(interiorQual_dict)
 df_1.drop('interiorQual', axis=1, inplace=True)
-df_1.to_csv('data_imputed_1.csv')
+
+#df_1.to_csv('data_imputed_1.csv')
 
 
-                
+###############
+# thermalChar #
+###############
 
+# Plotte den Mittelwert der Kaltmiete für jeden Abschnitt von thermalChar der Breite binwidth 
+# Dazu: thermalChar diskretisieren, Mittelwerte über Gruppen bilden
+binwidth = 10
+df_1['thermalChar_discrete'] = df_1.thermalChar.apply(lambda x: x - m.fmod(x,binwidth))
+df_2 = df_1[['thermalChar_discrete','baseRent']].groupby('thermalChar_discrete', as_index=False).mean()
+sns.scatterplot(x='thermalChar_discrete', y='baseRent', data=df_2.loc[df_2['thermalChar_discrete']<550])    
 
+# Der einzige Bereich, der einen Zusammenhang erklären könnte ist der von thermalChar in (80,150)
+sns.violinplot(x='yearConstructedRange_new', y='thermalChar', data=df_1.loc[df_1.thermalChar < 550])
+df_1[['thermalChar', 'yearConstructedRange_new']].corr()
+sns.violinplot(x='noRooms', y='thermalChar', data=df_1.loc[df_1.thermalChar < 550])
+df_1[['thermalChar', 'noRooms']].corr()
+sns.histplot(x='baseRent', y='thermalChar', bins=30, data=df_1.loc[(df_1.baseRent<800) & (df_1.thermalChar <250)])
+sns.regplot(y='baseRent', x='thermalChar', data=df_1.loc[(df_1.baseRent<800) & (df_1.thermalChar <500)], scatter=False)
 
+df_1.loc[(df_1['thermalChar']>80) &(df_1['thermalChar']<150)].shape
