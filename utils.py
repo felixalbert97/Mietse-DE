@@ -29,3 +29,19 @@ def categorical_dist_imputer(df, column, inplace = False):
     else:
         df.loc[df[column].isnull(), column] = random_floors
         return df
+
+
+def generate_dummies(ts, cols, trap=False):
+    # iterate over each column which you want to dummify
+    for col in cols:
+        # create dummy variables out of the column
+        dummies = pd.get_dummies(ts[col], prefix = col)
+        # if trap is true we will drop one of the 
+        # created dummies to avoid the dummy trap problem
+        if trap:
+            ts = ts.join(dummies.iloc[:, :-1])
+        else:
+            ts = ts.join(dummies)
+    # drop the normal columns since you now have dummy variables
+    ts.drop(cols, axis = 1, inplace = True)
+    return ts
