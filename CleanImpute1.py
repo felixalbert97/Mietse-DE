@@ -96,7 +96,7 @@ df_1.drop('yearConstructed', axis=1, inplace=True)
 # floor/numberOfFloors #
 ########################
 
-#sns.violinplot(x='floor', y='baseRent', data=df_1[df_1.floor < 20])
+sns.violinplot(x='floor', y='baseRent', data=df_1[df_1.floor < 20])
 #df_1.loc[df_1.floor >5].shape
 
 #sns.violinplot(x='numberOfFloors', y='baseRent', data=df_1[df_1.numberOfFloors < 20])
@@ -135,8 +135,6 @@ interiorQual_dict = {'normal':0, 'simple':0, 'nicht vorhanden':0, 'sophisticated
 df_1['interiorQual_new'] = df_1.interiorQual.map(interiorQual_dict)
 df_1.drop('interiorQual', axis=1, inplace=True)
 
-#df_1.to_csv('data_imputed_1.csv')
-
 
 ###############
 # thermalChar #
@@ -144,17 +142,47 @@ df_1.drop('interiorQual', axis=1, inplace=True)
 
 # Plotte den Mittelwert der Kaltmiete für jeden Abschnitt von thermalChar der Breite binwidth 
 # Dazu: thermalChar diskretisieren, Mittelwerte über Gruppen bilden
-binwidth = 10
-df_1['thermalChar_discrete'] = df_1.thermalChar.apply(lambda x: x - m.fmod(x,binwidth))
-df_2 = df_1[['thermalChar_discrete','baseRent']].groupby('thermalChar_discrete', as_index=False).mean()
-sns.scatterplot(x='thermalChar_discrete', y='baseRent', data=df_2.loc[df_2['thermalChar_discrete']<550])    
+# binwidth = 10
+# df_1['thermalChar_discrete'] = df_1.thermalChar.apply(lambda x: x - m.fmod(x,binwidth))
+# df_2 = df_1[['thermalChar_discrete','baseRent']].groupby('thermalChar_discrete', as_index=False).mean()
+# sns.scatterplot(x='thermalChar_discrete', y='baseRent', data=df_2.loc[df_2['thermalChar_discrete']<550])    
 
 # Der einzige Bereich, der einen Zusammenhang erklären könnte ist der von thermalChar in (80,150)
-sns.violinplot(x='yearConstructedRange_new', y='thermalChar', data=df_1.loc[df_1.thermalChar < 550])
-df_1[['thermalChar', 'yearConstructedRange_new']].corr()
-sns.violinplot(x='noRooms', y='thermalChar', data=df_1.loc[df_1.thermalChar < 550])
-df_1[['thermalChar', 'noRooms']].corr()
-sns.histplot(x='baseRent', y='thermalChar', bins=30, data=df_1.loc[(df_1.baseRent<800) & (df_1.thermalChar <250)])
-sns.regplot(y='baseRent', x='thermalChar', data=df_1.loc[(df_1.baseRent<800) & (df_1.thermalChar <500)], scatter=False)
+# sns.violinplot(x='yearConstructedRange_new', y='thermalChar', data=df_1.loc[df_1.thermalChar < 550])
+# df_1[['thermalChar', 'yearConstructedRange_new']].corr()
+# sns.violinplot(x='noRooms', y='thermalChar', data=df_1.loc[df_1.thermalChar < 550])
+# df_1[['thermalChar', 'noRooms']].corr()
+# sns.histplot(x='baseRent', y='thermalChar', bins=30, data=df_1.loc[(df_1.baseRent<800) & (df_1.thermalChar <250)])
+# sns.regplot(y='baseRent', x='thermalChar', data=df_1.loc[(df_1.baseRent<800) & (df_1.thermalChar <500)], scatter=False)
 
 df_1.loc[(df_1['thermalChar']>80) &(df_1['thermalChar']<150)].shape
+# Nur 81000 Daten liegen in einem Bereich, der einen Zusammenhang zur Kaltmiete vermuten lässt
+# Da das nur 1/3 der Daten sind: Spalte droppen
+
+df_1.drop('thermalChar', axis=1, inplace=True)
+
+
+###########
+# noRooms #
+###########
+
+# Drop Outlier 
+noRooms_max = 7
+df_1 = df_1.loc[df_1.noRooms <= noRooms_max]
+
+# Runde die Raumzahlangaben auf 'halbe' Räume 
+df_1['noRooms'] = df_1['noRooms'].multiply(2).round().multiply(1/2)
+
+# sns.violinplot(x='noRooms', y='baseRent', data=df_1)
+
+###############
+# livingSpace #
+###############
+
+# Drop Outlier
+livingSpace_max = 250
+df_1 = df_1.loc[df_1.livingSpace <= livingSpace_max]
+
+# sns.scatterplot(x='livingSpace', y='baseRent', data=df_1.loc[df_1.regio2 == 'Hamburg'])
+
+df_1.to_csv('data_imputed_1.csv')

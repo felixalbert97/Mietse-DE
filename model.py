@@ -14,22 +14,26 @@ df = pd.read_csv('data_imputed_1.csv', index_col=0)
 ###################
 
 # alle relevanten Spalten
-cols = ['baseRent', 'livingSpace', 'yearConstructedRange_new', 'interiorQual_new']
+cols = ['baseRent', 'livingSpace','garden', 'noRooms', 'yearConstructedRange_new', 'interiorQual_new']
 # Davon kategorische features:
-features_categorical = ['yearConstructedRange_new', 'interiorQual_new']
+features_categorical = ['yearConstructedRange_new','noRooms', 'interiorQual_new', 'garden']
 # Davon numerische features:
 features_numerical = ['livingSpace']
 
+# Reduziere Datensatz auf betrachtete Stadt
+#city = 'Hamburg'
+#df = df.loc[df.regio2 == city]
+
 # Reduziere Datensatz auf relevante Spalten
 df = df[cols]
-
-# Erstelle Dummievariablen für kategorische Features
-df = tools.generate_dummies(df,features_categorical,trap=True)
 
 
 #################
 # Preprocessing #
 #################
+
+# Erstelle Dummievariablen für kategorische Features
+df = tools.generate_dummies(df,features_categorical,trap=True)
 
 # Split training- und test-set
 X = df.loc[:, ~df.columns.isin(['baseRent'])]
@@ -61,7 +65,7 @@ R2_lg = lg.score(X_test_lg, y_test_lg['target_sc'])
 
 # DecisionTree 
 X_train_rfr, X_test_rfr, y_train_rfr, y_test_rfr = X_train.copy(), X_test.copy(), y_train_sc.copy(), y_test_sc.copy()
-rfr = RandomForestRegressor(max_depth=15, random_state=1)
+rfr = RandomForestRegressor(max_depth=30, random_state=1)
 rfr.fit(X_train_rfr,y_train_rfr[['target_sc']])
 y_test_rfr['predict_sc'] = rfr.predict(X_test_rfr)
 y_test_rfr['prediction'] = sc_baseRent.inverse_transform(y_test_rfr['predict_sc'])
