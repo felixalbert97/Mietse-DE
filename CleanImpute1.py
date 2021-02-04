@@ -96,7 +96,7 @@ df_1.drop('yearConstructed', axis=1, inplace=True)
 # floor/numberOfFloors #
 ########################
 
-sns.violinplot(x='floor', y='baseRent', data=df_1[df_1.floor < 20])
+#sns.violinplot(x='floor', y='baseRent', data=df_1[df_1.floor < 20])
 #df_1.loc[df_1.floor >5].shape
 
 #sns.violinplot(x='numberOfFloors', y='baseRent', data=df_1[df_1.numberOfFloors < 20])
@@ -184,5 +184,26 @@ livingSpace_max = 250
 df_1 = df_1.loc[df_1.livingSpace <= livingSpace_max]
 
 # sns.scatterplot(x='livingSpace', y='baseRent', data=df_1.loc[df_1.regio2 == 'Hamburg'])
+
+#############
+# condition #
+#############
+
+#sns.violinplot(y='baseRent', x='condition', data=df )
+
+new = ['fully_renovated', 'first_time_use', 'modernized']
+normal = ['well_kept', 'refurbished', 'mint_condition', 'first_time_use_after_refurbishment']
+old = ['negotiable', 'need_of_renovation', 'ripe_for_demolition']
+
+def condition_map(condition):
+    if condition in new:
+        return 1
+    if condition in normal:
+        return 2
+    if condition in old:
+        return 3
+
+df_1['condition_new'] = df_1.condition.map(condition_map)
+df_1 = tools.categorical_dist_imputer(df_1,'condition_new')
 
 df_1.to_csv('data_imputed_1.csv')
