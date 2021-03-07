@@ -44,7 +44,7 @@ df_cut = df.loc[(df.baseRent < rent_upper_bound) & (df.baseRent > rent_lower_bou
 # 2. Ketegorie: normale Types 
 
 exp_typeOfFlat = ['penthouse', 'loft', 'maisonette', 'terraced_flat']
-df_cut.loc[df_cut.typeOfFlat.isin(exp_typeOfFlat)].shape
+#df_cut.loc[df_cut.typeOfFlat.isin(exp_typeOfFlat)].shape
 
 # Nur 13637 Appartments sind vom teuren Type
 # ---> Reduktion der Analyse auf normale Types 
@@ -205,5 +205,22 @@ def condition_map(condition):
 
 df_1['condition_new'] = df_1.condition.map(condition_map)
 df_1 = tools.categorical_dist_imputer(df_1,'condition_new')
+
+###############
+# firingTypes #
+###############
+
+
+# df_1['firingTypes'].value_counts()[0:40]
+
+# Selektiere die wichtigsten Kategorien
+firingTypes_chosen = ['gas', 'district_heating','oil', 'natural_gas_light','electricity', 'natural_gas_heavy']
+
+# Plotte Violinplot
+# sns.violinplot(x='firingTypes', y='baseRent', data=df_1.loc[df_1.firingTypes.isin(firingTypes_chosen)])
+# df_1.loc[df_1.firingTypes.isin(firingTypes_chosen)].count()
+
+df_1['firingTypes_new'] = df_1.firingTypes.map(lambda firingType: firingType if firingType in firingTypes_chosen else (None if pd.isnull(firingType) else 'other'))
+df_1 = tools.categorical_dist_imputer(df_1,'firingTypes_new')
 
 df_1.to_csv('data_imputed_1.csv')

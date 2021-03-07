@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+from scipy.stats import f_oneway
 
 def categorical_dist_imputer(df, column, inplace = False):
     """Imputes NaN-values from the categorical column named column in the DataFrame df
@@ -46,6 +47,25 @@ def generate_dummies(ts, cols, trap=False):
     ts.drop(cols, axis = 1, inplace = True)
     return ts
 
+def generate_polynomials(df, columns, exponents=[], inplace=False):
+    """ For every column in 'columns' generates a new column in df for every entry 
+    in 'exponents' by taking the column to the power of the entry in 'exponents'.
+    Input:  dataframe df
+            list of columns
+            list of exponents
+    Output: modified dataframe """
+    if inplace:
+        for column in columns:
+            for exponent in exponents:
+                df[column + '^' + str(exponent)] = df[column]**exponent
+        return df
+    else:
+        df_copy = df.copy()
+        for column in columns:
+            for exponent in exponents:
+                df_copy[column + '^' + str(exponent)] = df_copy[column]**exponent
+        return df_copy
+
 def scale_targets(y_train, y_test):
     """ Input: target columns ((:,1)-shaped DataFrame)
         Output: target DataFrames appended by a scaled column"""
@@ -77,3 +97,16 @@ def scale_features(X_train,X_test):
     X_test_sc_df = pd.DataFrame(X_test_sc, index=X_test.index, columns=X_test.columns)
 
     return sc, X_train_sc_df, X_test_sc_df
+
+def cat_feature_f_oneway(X, y, feature):
+    """ Feature-Dataframe X with dummy-encoded categorical variables, Target-values y
+    Perform scipy.stats.f_oneway (ANOVA) on the different categories of feature """
+
+    # select columns beginning with feature
+    filter_col = [col for col in X if col.startswith(feature)]
+
+    # create samples
+    samples = [y.loc[X[col] == 1] for col in filter_col]
+
+    # perform f_oneway
+    return f_oneway(*samples)
