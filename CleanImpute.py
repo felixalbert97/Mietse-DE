@@ -121,7 +121,7 @@ df_1 = tools.categorical_dist_imputer(df_1,'floor_new')
 # InteriorQual #
 ################
 
-df_1.loc[df['interiorQual'].isnull(),'interiorQual'] = 'nicht vorhanden'
+df_1.loc[df['interiorQual'].isnull(),'interiorQual'] = 'missing'
 
 #df_1.groupby('interiorQual').size()
 #sns.violinplot(x='interiorQual', y='baseRent', data=df_1)
